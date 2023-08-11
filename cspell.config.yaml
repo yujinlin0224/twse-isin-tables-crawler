@@ -1,6 +1,11 @@
-version: "0.2"
+version: '0.2'
 words:
   - gocolly
   - isin
+  - jinzhu
   - jsoniter
+  - muturity
+  - tbody
   - twse
+  - twseisintablescrawler
+  - yujinlin

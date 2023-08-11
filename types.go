@@ -1,4 +1,4 @@
-package main
+package twseisintablescrawler
 
 import (
 	"cloud.google.com/go/civil"
@@ -48,24 +48,25 @@ func NewColumn(key, englishLabel, chineseLabel string, parsers ...Parser) Column
 	}
 }
 
-var supportedColumns = []Column{
-	NewColumn("securityCode,securityName", "Security Code & Security Name", "有價證券代號及名稱", stringParser, multiLanguageTextParser),
-	NewColumn("isinCode", "ISIN Code", "國際證券辨識號碼(ISIN Code)", stringParser),
-	NewColumn("issuedDate", "Date Issued", "公開發行日", dateParser),
-	NewColumn("industrialGroup", "Industrial Group", "產業別", multiLanguageTextParser),
-	NewColumn("cfiCode", "CFICode", "CFICode", stringParser),
-	NewColumn("remark", "Remarks", "備註", multiLanguageTextParser),
-	NewColumn("listedDate", "Date Listed", "上市日", dateParser),
-	NewColumn("market", "Market", "市場別", multiLanguageTextParser),
-	NewColumn("issuedDate", "Date Issued", "發行日", dateParser),
-	NewColumn("maturityDate", "Muturity", "到期日", dateParser),
-	NewColumn("interestRate", "Interest", "利率值", numberParser),
-	NewColumn("registrationDate", "Date of Registering", "登錄日", dateParser),
-	NewColumn("announcementDate", "Date Issued", "掛牌日", dateParser),
-	NewColumn("securityName", "Security Name", "有價證券名稱", multiLanguageTextParser),
-	NewColumn("indexCode,indexName", "Index Code & Index Name", "指數代號及名稱", stringParser, multiLanguageTextParser),
-	NewColumn("announcementDate", "Date Announcement", "發布日", dateParser),
-	NewColumn("remark", "Remark", "備註", multiLanguageTextParser),
+var SupportedColumns = []Column{
+	NewColumn("securityCode,securityName", "Security Code & Security Name", "有價證券代號及名稱", StringParser, MultiLanguageTextParser),
+	NewColumn("isinCode", "ISIN Code", "國際證券辨識號碼(ISIN Code)", StringParser),
+	NewColumn("issuedDate", "Date Issued", "公開發行日", DateParser),
+	NewColumn("industrialGroup", "Industrial Group", "產業別", MultiLanguageTextParser),
+	NewColumn("cfiCode", "CFICode", "CFICode", StringParser),
+	NewColumn("remark", "Remarks", "備註", MultiLanguageTextParser),
+	NewColumn("listedDate", "Date Listed", "上市日", DateParser),
+	NewColumn("market", "Market", "市場別", MultiLanguageTextParser),
+	NewColumn("issuedDate", "Date Issued", "發行日", DateParser),
+	NewColumn("inceptionDate", "Date Issued", "基金成立日", DateParser),
+	NewColumn("maturityDate", "Muturity", "到期日", DateParser),
+	NewColumn("interestRate", "Interest", "利率值", NumberParser),
+	NewColumn("registrationDate", "Date of Registering", "登錄日", DateParser),
+	NewColumn("announcementDate", "Date Issued", "掛牌日", DateParser),
+	NewColumn("securityName", "Security Name", "有價證券名稱", MultiLanguageTextParser),
+	NewColumn("indexCode,indexName", "Index Code & Index Name", "指數代號及名稱", StringParser, MultiLanguageTextParser),
+	NewColumn("announcementDate", "Date Announcement", "發布日", DateParser),
+	NewColumn("remark", "Remark", "備註", MultiLanguageTextParser),
 }
 
 type Row struct {
@@ -75,6 +76,7 @@ type Row struct {
 	IndexName        *MultiLanguageText `json:"indexName,omitempty"`
 	ISINCode         *string            `json:"isinCode,omitempty"`
 	IssuedDate       *civil.Date        `json:"issuedDate,omitempty"`
+	InceptionDate    *civil.Date        `json:"inceptionDate,omitempty"`
 	ListedDate       *civil.Date        `json:"listedDate,omitempty"`
 	MaturityDate     *civil.Date        `json:"maturityDate,omitempty"`
 	RegistrationDate *civil.Date        `json:"registrationDate,omitempty"`

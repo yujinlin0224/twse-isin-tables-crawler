@@ -1,7 +1,8 @@
-package main
+package twseisintablescrawler
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -10,18 +11,24 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-const tableDomain = "isin.twse.com.tw"
+const TableDomain = "isin.twse.com.tw"
 
-var formatTableURLOfLanguages = map[Language]string{
+var TableURLFormatOfLanguages = map[Language]string{
 	LanguageEnglish: `https://isin.twse.com.tw/isin/e_C_public.jsp?strMode=%d`,
 	LanguageChinese: `https://isin.twse.com.tw/isin/C_public.jsp?strMode=%d`,
 }
 
-func crawl(tableIndex int) ([]Table, []error) {
+var TableIndexes = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+
+func Crawl(tableIndex int) ([]Table, []error) {
 	var errs []error
 
+	if !slices.Contains(TableIndexes, tableIndex) {
+		return nil, []error{fmt.Errorf("table index %d is not supported", tableIndex)}
+	}
+
 	c := colly.NewCollector(
-		colly.AllowedDomains(tableDomain),
+		colly.AllowedDomains(TableDomain),
 		colly.Async(true),
 		colly.MaxDepth(1),
 	)
@@ -54,7 +61,7 @@ func crawl(tableIndex int) ([]Table, []error) {
 	}
 
 	crawlTable := func(language Language, tableTemplate *Table, tables *[]Table) {
-		tableURL := fmt.Sprintf(formatTableURLOfLanguages[language], tableIndex)
+		tableURL := fmt.Sprintf(TableURLFormatOfLanguages[language], tableIndex)
 		c.OnHTML("h2 > strong > font.h1:not(:has(center))", func(e *colly.HTMLElement) {
 			if e.Request.URL.String() != tableURL {
 				return
@@ -66,7 +73,7 @@ func crawl(tableIndex int) ([]Table, []error) {
 				return
 			}
 			rawDate := strings.Split(e.Text, ":")[1]
-			tableTemplate.UpdatedDate = dateParser(language, rawDate).(civil.Date)
+			tableTemplate.UpdatedDate = DateParser(language, rawDate).(civil.Date)
 		})
 		c.OnHTML("table.h4 > tbody", func(e *colly.HTMLElement) {
 			if e.Request.URL.String() != tableURL {
@@ -111,7 +118,7 @@ func crawl(tableIndex int) ([]Table, []error) {
 					table = new(Table)
 					table.Subtitle = subtitle
 				}
-				columns, row, err := parseColumnsAndRow(language, columnLabels, row)
+				columns, row, err := ParseColumnsAndRow(language, columnLabels, row)
 				if err != nil {
 					errs = append(errs, err)
 					continue
@@ -128,7 +135,7 @@ func crawl(tableIndex int) ([]Table, []error) {
 				*tables = append(*tables, *table)
 			}
 			if len(*tables) == 0 {
-				columns, _, err := parseColumnsAndRow(language, columnLabels, nil)
+				columns, _, err := ParseColumnsAndRow(language, columnLabels, nil)
 				if err != nil {
 					errs = append(errs, err)
 					return
@@ -166,6 +173,17 @@ func crawl(tableIndex int) ([]Table, []error) {
 			copier.CopyWithOption(&table, &tableOfLanguage, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 			tables[i] = table
 		}
+	}
+	return tables, errs
+}
+
+func CrawlAll() ([]Table, []error) {
+	var tables []Table
+	var errs []error
+	for _, tableIndex := range TableIndexes {
+		t, e := Crawl(tableIndex)
+		tables = append(tables, t...)
+		errs = append(errs, e...)
 	}
 	return tables, errs
 }

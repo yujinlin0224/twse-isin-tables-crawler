@@ -1,4 +1,4 @@
-package main
+package twseisintablescrawler
 
 import (
 	"fmt"
@@ -14,14 +14,14 @@ import (
 type Parser func(Language, string) interface{}
 
 var (
-	stringParser = func(_ Language, s string) interface{} {
+	StringParser = func(_ Language, s string) interface{} {
 		return strings.TrimSpace(s)
 	}
-	numberParser = func(_ Language, s string) interface{} {
+	NumberParser = func(_ Language, s string) interface{} {
 		number, _ := strconv.ParseFloat(strings.TrimSpace(s), 64)
 		return number
 	}
-	dateParser = func(_ Language, s string) interface{} {
+	DateParser = func(_ Language, s string) interface{} {
 		dateString := strings.ReplaceAll(strings.TrimSpace(s), "/", "-")
 		if !regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`).MatchString(dateString) {
 			return nil
@@ -29,12 +29,12 @@ var (
 		date, _ := civil.ParseDate(dateString)
 		return date
 	}
-	multiLanguageTextParser = func(language Language, s string) interface{} {
+	MultiLanguageTextParser = func(language Language, s string) interface{} {
 		return NewMultiLanguageText(language, strings.TrimSpace(s))
 	}
 )
 
-func parseColumnsAndRow(language Language, columnLabels []string, tableRow []string) ([]Column, *Row, error) {
+func ParseColumnsAndRow(language Language, columnLabels []string, tableRow []string) ([]Column, *Row, error) {
 	if tableRow != nil && len(columnLabels) != len(tableRow) {
 		return nil, nil, fmt.Errorf("table row length not match: %d != %d", len(tableRow), len(columnLabels))
 	}
@@ -46,13 +46,13 @@ func parseColumnsAndRow(language Language, columnLabels []string, tableRow []str
 		if tableRow != nil {
 			tableData = tableRow[i]
 		}
-		supportedColumnIndex := slices.IndexFunc(supportedColumns, func(column Column) bool {
+		supportedColumnIndex := slices.IndexFunc(SupportedColumns, func(column Column) bool {
 			return column.Label.Chinese == columnLabel || column.Label.English == columnLabel
 		})
 		if supportedColumnIndex == -1 {
 			return nil, nil, fmt.Errorf("column %s not supported", columnLabel)
 		}
-		column := supportedColumns[supportedColumnIndex]
+		column := SupportedColumns[supportedColumnIndex]
 		if strings.Contains(column.Key, ",") {
 			splitColumnKey := strings.Split(column.Key, ",")
 			if len(splitColumnKey) != 2 {
